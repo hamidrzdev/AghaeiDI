@@ -1,16 +1,16 @@
 package ir.ham.aghaeidi
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import dagger.hilt.android.AndroidEntryPoint
 import ir.ham.aghaeidi.databinding.ActivityMainBinding
+import ir.ham.aghaeidi.login.LoginActivity
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.simpleName
     private lateinit var binding: ActivityMainBinding
@@ -24,9 +24,17 @@ class MainActivity : AppCompatActivity() {
         init()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun init() {
-        Log.i(TAG, "init: localName: ${viewModel.localUsername}")
-        Log.i(TAG, "init: remoteName: ${viewModel.remoteUsername}")
+
+        binding.btn.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
+
+        binding.tv.text = """
+            local: ${viewModel.localAccountName()}
+            remote ${viewModel.remoteAccountName()}
+        """.trimIndent()
 
     }
 }

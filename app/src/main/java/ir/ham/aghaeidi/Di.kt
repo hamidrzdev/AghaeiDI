@@ -1,30 +1,54 @@
 package ir.ham.aghaeidi
 
-import ir.ham.aghaeidi.dataSource.UserDataSource
-import ir.ham.aghaeidi.dataSource.UserLocalUserName
-import ir.ham.aghaeidi.dataSource.UserRemoteUserName
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.components.SingletonComponent
+import ir.ham.aghaeidi.dataSource.AccountDataSource
+import ir.ham.aghaeidi.dataSource.AccountLocalAccountName
+import ir.ham.aghaeidi.dataSource.AccountRemoteAccountName
+import ir.ham.aghaeidi.repository.AccountRepository
+import ir.ham.aghaeidi.repository.AccountRepositoryImpl
 import ir.ham.aghaeidi.repository.UserRepository
 import ir.ham.aghaeidi.repository.UserRepositoryImpl
-import org.koin.core.module.dsl.binds
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
+import javax.inject.Named
+import javax.inject.Singleton
 
-val appModule = module {
-//    singleOf(::UserRemoteUserName){ binds(listOf(UserDataSource::class)) }
-//    singleOf(::UserLocalUserName){ binds(listOf(UserDataSource::class)) }
-
-
-//    single<UserDataSource>(named("remote")) { UserRemoteUserName() }
-//    single<UserDataSource>(named("local")) { UserLocalUserName() }
-    single<UserRepository> { UserRepositoryImpl() }
-
-//    viewModel { MainViewModel(userRepository = UserRepositoryImpl(userLocalDataSource = UserLocalUserName(), userRemoteDataSource = UserRemoteUserName())) }
-
-    viewModelOf(::MainViewModel)
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule{
+    @Singleton
+    @Provides
+    @Named("local")
+    fun provideLocalAccountDataSource():AccountDataSource{
+        return AccountLocalAccountName()
+    }
+    @Singleton
+    @Provides
+    @Named("remote")
+    fun provideRemoteAccountDataSource():AccountDataSource{
+        return AccountRemoteAccountName()
+    }
+    @Singleton
+    @Provides
+    fun provideAccountRepository(
+        @Named("local") accountLocalUserName: AccountDataSource,
+        @Named("remote") accountRemoteUserName: AccountDataSource,
+    ):AccountRepository{
+        return AccountRepositoryImpl(
+            accountLocalDataSource = accountLocalUserName,
+            accountRemoteDataSource = accountRemoteUserName
+        )
+    }
 }
 
-val viewModelModule = module {
+@Module
+@InstallIn(ActivityComponent::class)
+object ActivityModule{
+    @Provides
+    fun provideUserRepository():UserRepository{
+        return UserRepositoryImpl()
+    }
 }
