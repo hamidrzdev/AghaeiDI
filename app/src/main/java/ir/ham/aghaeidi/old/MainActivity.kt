@@ -1,17 +1,15 @@
-package ir.ham.aghaeidi
+package ir.ham.aghaeidi.old
 
-import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import ir.ham.aghaeidi.databinding.ActivityMainBinding
-import ir.ham.aghaeidi.login.LoginActivity
+import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    private var job: Job? = null
     private val TAG = MainActivity::class.simpleName
     private lateinit var binding: ActivityMainBinding
 
@@ -21,20 +19,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        init()
+
+//        val human = Human(id = 0, name = "HamidReza", age = 22)
+//        Log.i(TAG, "onCreate: original human: $human")
+//
+//        val copyHuman = human.copy(name = "Farzad")
+//        Log.i(TAG, "onCreate: copyHuman: $copyHuman")
+
+//        val email1 = NotificationFactory.createNotification(NotificationType.EMAIL)
+//        val email2 = NotificationFactory.createNotification(NotificationType.EMAIL)
+//
+//        Log.i(TAG, "onCreate: email1: $email1")
+//        Log.i(TAG, "onCreate: email2: $email2")
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun init() {
 
-        binding.btn.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-
-        binding.tv.text = """
-            local: ${viewModel.localAccountName()}
-            remote ${viewModel.remoteAccountName()}
-        """.trimIndent()
-
-    }
 }

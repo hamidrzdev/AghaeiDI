@@ -1,4 +1,4 @@
-package ir.ham.aghaeidi
+package ir.ham.aghaeidi.old
 
 import dagger.Module
 import dagger.Provides
@@ -52,3 +52,45 @@ object ActivityModule{
         return UserRepositoryImpl()
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

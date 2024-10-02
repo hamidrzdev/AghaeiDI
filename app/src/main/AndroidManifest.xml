@@ -12,10 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AghaeiDI"
         tools:targetApi="31"
-        android:name=".App">
+        android:name=".old.App">
         <activity android:name=".login.LoginActivity"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".async.CoroutineActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AghaeiDI">
