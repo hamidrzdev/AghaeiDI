@@ -3,6 +3,7 @@ package ir.ham.aghaeidi.old
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentFactory
 import dagger.hilt.android.AndroidEntryPoint
 import ir.ham.aghaeidi.databinding.ActivityMainBinding
 import kotlinx.coroutines.Job
@@ -19,6 +20,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        FragmentFactory()
 
 //        val human = Human(id = 0, name = "HamidReza", age = 22)
 //        Log.i(TAG, "onCreate: original human: $human")
