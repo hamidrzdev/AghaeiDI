@@ -17,7 +17,7 @@
         <activity android:name=".SecondActivity"/>
         <activity android:name=".AghaeiActivity"/>
         <activity
-            android:name=".ScrollActivity"
+            android:name=".async.CoroutineActivity"
             android:exported="true"
 
             android:label="@string/app_name"

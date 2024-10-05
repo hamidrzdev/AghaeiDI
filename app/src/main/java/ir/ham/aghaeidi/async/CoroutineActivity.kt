@@ -1,5 +1,6 @@
 package ir.ham.aghaeidi.async
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -18,11 +19,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import java.util.concurrent.TimeUnit
 
 class CoroutineActivity : AppCompatActivity() {
@@ -60,8 +69,140 @@ class CoroutineActivity : AppCompatActivity() {
 //        sampleFlow()
 //        counterFlow()
 //        producesFasterThanFlowNormal()
-        producesFasterThanSharedFlow()
+//        producesFasterThanSharedFlow()
+
+        mergeOperator()
+        zipOperator()
+
+
+//        flatMapConcat()
+//        flatMapMerge()
+//        flatMapLatest()
     }
+
+    private fun mergeOperator(){
+        // FLOW
+        lifecycleScope.launch {
+            val flow1 = flowOf(1, 2, 3)
+//            val flow1 = flow {
+//                repeat(3){
+//                    delay(500)
+//                    emit(it)
+//                }
+//            }
+            val flow2 = flowOf(4, 5, 6)
+            val mergedFlow = merge(flow1, flow2)
+            mergedFlow.collect { Log.i(TAG, "mergeOperator KOTLIN: $it") }
+
+            val observable1 = Observable.just(1, 2, 3)
+            val observable2 = Observable.just("A", "B", "C")
+            val mergedObservable = Observable.merge(observable1, observable2)
+            mergedObservable.subscribe { Log.i(TAG, "mergeOperator RxKotlin: $it") }
+        }
+    }
+
+    private fun zipOperator(){
+        lifecycleScope.launch {
+//            val flow1 = flowOf(1, 2, 3)
+            val flow1 = flow {
+                repeat(3){
+                    delay(1000)
+                    emit(it)
+                }
+            }
+            val flow2 = flowOf("A", "B", "C")
+            val zippedFlow = flow1.zip(flow2) { num, char -> "$num $char" }
+
+            zippedFlow.collect { Log.i(TAG, "zipOperator: KOTLIN: $it") }
+
+            val observable1 = Observable.just(1, 2, 3).concatMap { Observable.just(it).delay(1,TimeUnit.SECONDS) }
+            val observable2 = Observable.just("A", "B", "C")
+            val zippedObservable = Observable.zip(observable1, observable2) { num, char -> "$num$char" }
+            zippedObservable.subscribe { Log.i(TAG, "zipOperator: RxKotlin: $it") }
+
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private fun flatMapConcat(){
+        lifecycleScope.launch {
+            val numbers = flowOf(1, 2, 3)
+            numbers.flatMapConcat { number ->
+                flow {
+                    emit("$number: A")
+                    delay(100) // Simulate async work
+                    emit("$number: B")
+                }
+            }.flatMapConcat {
+                flow {
+                    emit("$it: C")
+                    delay(100) // Simulate async work
+                    emit("$it: D")
+                }
+            }
+
+                .collect { Log.i(TAG, "flatMapConcat FLOW: $it") }
+
+        val source = Observable.just(1, 2, 3)
+        source.concatMap { number ->
+            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+        }
+            .subscribe { Log.i(TAG, "flatMapConcat: RxKotlin: $it") }
+
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private fun flatMapMerge(){
+        lifecycleScope.launch {
+            val numbers = flowOf(1, 2, 3)
+            numbers.flatMapMerge { number ->
+                flow {
+                    emit("$number: A")
+                    delay(100) // Simulate async work
+                    emit("$number: B")
+                }
+            }.flatMapMerge {
+                flow {
+                    emit("$it: C")
+                    delay(100) // Simulate async work
+                    emit("$it: D")
+                }
+            }
+                .collect { Log.i(TAG, "flatMapMerge FLOW: $it") }
+
+        val source = Observable.just(1, 2, 3)
+        source.flatMap { number ->
+            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+        }.subscribe { Log.i(TAG, "flatMapMerge: RxKotlin: $it") }
+        }
+
+    }
+
+
+    @SuppressLint("CheckResult")
+    private fun flatMapLatest(){
+        lifecycleScope.launch {
+            val numbers = flowOf(1, 2, 3)
+            numbers.flatMapLatest { number ->
+                flow {
+                    emit("$number: A")
+                    delay(100) // Simulate async work
+                    emit("$number: B")
+                }
+            }.collect{ Log.i(TAG, "flatMapLatest: FLOW: $it") }
+
+        val source = Observable.just(1, 2, 3).concatMap { number ->
+            Observable.just(number).delay(50, TimeUnit.MILLISECONDS)
+        }
+        source.switchMap { number ->
+            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+        }.subscribe { Log.i(TAG, "flatMapLatest: RxKotlin: $it") }
+        }
+
+    }
+
+
 
 
     private fun producesFasterThanFlowNormal() {
@@ -269,10 +410,18 @@ class CoroutineActivity : AppCompatActivity() {
         val second = WebService.secondStreamCoroutine().toObservable()
         val third = WebService.thirdStreamCoroutine().toObservable()
         val mergedSingle = Observable.merge(first, second, third)
-        val disposable = mergedSingle.subscribeBy(
-            onNext = { result -> Log.i(TAG, "Merged result using zip: $result") },
-            onError = { error -> Log.e(TAG, "Error using zip: ${error.message}") }
-        )
+//        val disposable = mergedSingle.subscribeBy(
+//            onNext = { result -> Log.i(TAG, "Merged result using zip: $result") },
+//            onError = { error -> Log.e(TAG, "Error using zip: ${error.message}") }
+//        )
+
+
+        val observable1 = Observable.just(0).delay(1,TimeUnit.SECONDS   )
+        val observable2 = Observable.just("hello")
+        Observable.concat(observable1,observable2).subscribe {
+            Log.i(TAG, "mergeRequestsRxRxKotlin: $it")
+        }
+
     }
 
 

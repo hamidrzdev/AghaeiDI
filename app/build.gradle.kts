@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google)
 }
 
 android {
@@ -66,4 +67,8 @@ dependencies {
     implementation(libs.dagger.hilt)
     implementation(libs.rx.kotlin)
     ksp(libs.dagger.compiler)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
 }

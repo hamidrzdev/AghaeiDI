@@ -17,6 +17,8 @@ daggerHilt = "2.51.1"
 fragment = "1.8.2"
 viewModel = "2.6.0"
 rxKotlin3 = "3.0.1"
+firebase = "32.2.0"
+google = "4.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,7 +37,9 @@ logging-interceptor = {group = "com.squareup.okhttp3", name = "logging-intercept
 dagger_hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "daggerHilt" }
 dagger_compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "daggerHilt" }
 rx_kotlin =  { group = "io.reactivex.rxjava3", name = "rxkotlin", version.ref="rxKotlin3" }
-
+firebase-bom = {group = "com.google.firebase",name =  "firebase-bom", version.ref = "firebase"}
+firebase-messaging = {group = "com.google.firebase",name =  "firebase-messaging-ktx"}
+firebase-analytics = {group = "com.google.firebase",name =  "firebase-analytics-ktx"}
 
 
 [plugins]
@@ -43,3 +47,5 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 daggerHilt = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
+google = { id = "com.google.gms.google-services", version.ref = "google" }
+

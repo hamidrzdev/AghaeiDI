@@ -1,9 +1,12 @@
 package ir.ham.aghaeidi.old
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentFactory
+import com.google.firebase.FirebaseApp
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import ir.ham.aghaeidi.databinding.ActivityMainBinding
 import kotlinx.coroutines.Job
@@ -20,6 +23,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+            Log.i(TAG, "onCreate: $it")
+        }.addOnFailureListener {
+            Log.e(TAG, "onCreate: $it")
+        }
 
 
         FragmentFactory()

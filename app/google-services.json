@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "434192698936",
+    "project_id": "aghaeidi-4a1f0",
+    "storage_bucket": "aghaeidi-4a1f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:434192698936:android:f8510347ec6da45521a0cd",
+        "android_client_info": {
+          "package_name": "ir.ham.aghaeidi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClpj0mi5rmSNyFku-Opcy75Q0PMw0g1rE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
