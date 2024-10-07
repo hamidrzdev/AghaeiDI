@@ -11,15 +11,18 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
 import ir.ham.aghaeidi.databinding.ActivityCoroutineBinding
+import ir.ham.aghaeidi.designPattern.FactoryMethodAdhereOCP
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
@@ -31,16 +34,45 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
-class CoroutineActivity : AppCompatActivity() {
-    private val TAG = CoroutineActivity::class.simpleName
+open class BaseActivity() : AppCompatActivity() {
+    val TAG = this::class.simpleName
+}
+
+open class people() {
+
+}
+
+class IranianPeople() : people() {
+
+}
+
+
+class Repo {
+
+}
+
+class Human(val id:Int){
+    init {
+        Log.i("MAIN", "init block $id")
+    }
+
+//    companion object {
+//        init {
+//            Log.i("MAIN", "companion init block")
+//        }
+//    }
+}
+
+class CoroutineActivity : BaseActivity() {
     private lateinit var binding: ActivityCoroutineBinding
 
     private val counterFlow = MutableSharedFlow<Int>()
     private val stateFlow2 = MutableStateFlow<Int>(0)
 
+    private val parentJob = Job()
 
 //    private val leakyRunnable = Runnable {
 //        repeat(100){
@@ -54,6 +86,9 @@ class CoroutineActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCoroutineBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        Log.i(TAG, "onCreate: TAG: $TAG")
 
 //        Thread(leakyRunnable).start()
 //        simpleLaunch()
@@ -71,16 +106,27 @@ class CoroutineActivity : AppCompatActivity() {
 //        producesFasterThanFlowNormal()
 //        producesFasterThanSharedFlow()
 
-        mergeOperator()
-        zipOperator()
+//        mergeOperator()
+//        zipOperator()
 
 
 //        flatMapConcat()
 //        flatMapMerge()
 //        flatMapLatest()
+
+//        simpleLaunchCoroutine()
+
+
+
+//        FactoryMethodAdhereOCP.ButtonFactory.createButton(FactoryMethodAdhereOCP.PrimaryButton::class)
+//        FactoryMethodAdhereOCP.ButtonFactory.createButton(FactoryMethodAdhereOCP.PrimaryButton::class)
+//        FactoryMethodAdhereOCP.ButtonFactory.createButton(FactoryMethodAdhereOCP.PrimaryButton::class)
+
+
+
     }
 
-    private fun mergeOperator(){
+    private fun mergeOperator() {
         // FLOW
         lifecycleScope.launch {
             val flow1 = flowOf(1, 2, 3)
@@ -101,11 +147,11 @@ class CoroutineActivity : AppCompatActivity() {
         }
     }
 
-    private fun zipOperator(){
+    private fun zipOperator() {
         lifecycleScope.launch {
 //            val flow1 = flowOf(1, 2, 3)
             val flow1 = flow {
-                repeat(3){
+                repeat(3) {
                     delay(1000)
                     emit(it)
                 }
@@ -115,16 +161,18 @@ class CoroutineActivity : AppCompatActivity() {
 
             zippedFlow.collect { Log.i(TAG, "zipOperator: KOTLIN: $it") }
 
-            val observable1 = Observable.just(1, 2, 3).concatMap { Observable.just(it).delay(1,TimeUnit.SECONDS) }
+            val observable1 = Observable.just(1, 2, 3)
+                .concatMap { Observable.just(it).delay(1, TimeUnit.SECONDS) }
             val observable2 = Observable.just("A", "B", "C")
-            val zippedObservable = Observable.zip(observable1, observable2) { num, char -> "$num$char" }
+            val zippedObservable =
+                Observable.zip(observable1, observable2) { num, char -> "$num$char" }
             zippedObservable.subscribe { Log.i(TAG, "zipOperator: RxKotlin: $it") }
 
         }
     }
 
     @SuppressLint("CheckResult")
-    private fun flatMapConcat(){
+    private fun flatMapConcat() {
         lifecycleScope.launch {
             val numbers = flowOf(1, 2, 3)
             numbers.flatMapConcat { number ->
@@ -143,17 +191,17 @@ class CoroutineActivity : AppCompatActivity() {
 
                 .collect { Log.i(TAG, "flatMapConcat FLOW: $it") }
 
-        val source = Observable.just(1, 2, 3)
-        source.concatMap { number ->
-            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
-        }
-            .subscribe { Log.i(TAG, "flatMapConcat: RxKotlin: $it") }
+            val source = Observable.just(1, 2, 3)
+            source.concatMap { number ->
+                Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+            }
+                .subscribe { Log.i(TAG, "flatMapConcat: RxKotlin: $it") }
 
         }
     }
 
     @SuppressLint("CheckResult")
-    private fun flatMapMerge(){
+    private fun flatMapMerge() {
         lifecycleScope.launch {
             val numbers = flowOf(1, 2, 3)
             numbers.flatMapMerge { number ->
@@ -171,17 +219,17 @@ class CoroutineActivity : AppCompatActivity() {
             }
                 .collect { Log.i(TAG, "flatMapMerge FLOW: $it") }
 
-        val source = Observable.just(1, 2, 3)
-        source.flatMap { number ->
-            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
-        }.subscribe { Log.i(TAG, "flatMapMerge: RxKotlin: $it") }
+            val source = Observable.just(1, 2, 3)
+            source.flatMap { number ->
+                Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+            }.subscribe { Log.i(TAG, "flatMapMerge: RxKotlin: $it") }
         }
 
     }
 
 
     @SuppressLint("CheckResult")
-    private fun flatMapLatest(){
+    private fun flatMapLatest() {
         lifecycleScope.launch {
             val numbers = flowOf(1, 2, 3)
             numbers.flatMapLatest { number ->
@@ -190,19 +238,17 @@ class CoroutineActivity : AppCompatActivity() {
                     delay(100) // Simulate async work
                     emit("$number: B")
                 }
-            }.collect{ Log.i(TAG, "flatMapLatest: FLOW: $it") }
+            }.collect { Log.i(TAG, "flatMapLatest: FLOW: $it") }
 
-        val source = Observable.just(1, 2, 3).concatMap { number ->
-            Observable.just(number).delay(50, TimeUnit.MILLISECONDS)
-        }
-        source.switchMap { number ->
-            Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
-        }.subscribe { Log.i(TAG, "flatMapLatest: RxKotlin: $it") }
+            val source = Observable.just(1, 2, 3).concatMap { number ->
+                Observable.just(number).delay(50, TimeUnit.MILLISECONDS)
+            }
+            source.switchMap { number ->
+                Observable.just("$number: A", "$number: B").delay(100, TimeUnit.MILLISECONDS)
+            }.subscribe { Log.i(TAG, "flatMapLatest: RxKotlin: $it") }
         }
 
     }
-
-
 
 
     private fun producesFasterThanFlowNormal() {
@@ -284,14 +330,41 @@ class CoroutineActivity : AppCompatActivity() {
     private val stateFlow = MutableStateFlow(0)
 
     private fun simpleLaunchCoroutine() {
+        val scope = CoroutineScope(Dispatchers.Main)
         lifecycleScope.launch {
-            launch {
-                Log.i(TAG, "simpleLaunch: launch 1")
-            }
-            launch {
-                Log.i(TAG, "simpleLaunch: launch 2")
+            try {
+                withContext(Dispatchers.Main) {
+                    launch {
+                        throw IllegalStateException()
+                    }
+                    launch {
+                    }
+                }
+
+            } catch (E: Exception) {
+                Log.e(TAG, "simpleLaunchCoroutine: e", E)
             }
         }
+
+//        lifecycleScope.launch {
+//            Log.i(TAG, "simpleLaunchCoroutine: before delay")
+//            delay(100)
+//            Log.i(TAG, "simpleLaunchCoroutine: after delay")
+//            job!!.cancel()
+//        }
+
+//        lifecycleScope.launch(parentJob) {
+//            repeat(100){
+//                delay(100)
+//                Log.i(TAG, "simpleLaunchCoroutine: launch 1: $it")
+//            }
+//        }
+//        lifecycleScope.launch(parentJob) {
+//            repeat(100){
+//                delay(100)
+//                Log.i(TAG, "simpleLaunchCoroutine: launch 2: $it")
+//            }
+//        }
     }
 
     private fun sampleFlow() {
@@ -416,9 +489,9 @@ class CoroutineActivity : AppCompatActivity() {
 //        )
 
 
-        val observable1 = Observable.just(0).delay(1,TimeUnit.SECONDS   )
+        val observable1 = Observable.just(0).delay(1, TimeUnit.SECONDS)
         val observable2 = Observable.just("hello")
-        Observable.concat(observable1,observable2).subscribe {
+        Observable.concat(observable1, observable2).subscribe {
             Log.i(TAG, "mergeRequestsRxRxKotlin: $it")
         }
 

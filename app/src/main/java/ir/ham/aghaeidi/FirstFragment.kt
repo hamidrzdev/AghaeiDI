@@ -36,6 +36,8 @@ class FirstFragment:Fragment() {
         }
     }
 
+
+
     companion object {
         fun newInstance(number: String):FirstFragment {
             val args = Bundle()
